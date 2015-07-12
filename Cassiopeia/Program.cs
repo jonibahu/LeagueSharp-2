@@ -475,10 +475,79 @@ namespace Cassiopeia
             }
 
 
-            if (E.IsReady() && GetETarget() != null)
+
+
+            if (E.IsReady() && (!harass || menu.Item("eHarass").GetValue<bool>()))
             {
-                if (Environment.TickCount >= LastECast + (EDelay * 100))
-                E.Cast(GetETarget());
+                Obj_AI_Hero mainTarget = null;
+
+                if (checkTarget)
+                {
+                    List<Obj_AI_Hero> Eenemies = GetEnemyList();
+
+                    Obj_AI_Hero eTarget = null;
+                    Obj_AI_Hero eTarget2 = null;
+
+                    if (Eenemies.Count() > 0)
+                    {
+                        double minCast1 = -1;
+                        double minCast2 = -1;
+
+                        foreach (Obj_AI_Hero enemyto in Eenemies)
+                        {
+                            if (!enemyto.IsValidTarget(E.Range)) continue;
+                            if (checkYasuoWall(enemyto.ServerPosition)) continue;
+
+                            Boolean buffedEnemy = false;
+                            if (enemyto.HasBuffOfType(BuffType.Poison))
+                            {
+                                var buffEndTime = GetPoisonBuffEndTime(enemyto);
+                                if (buffEndTime > Game.Time + E.Delay)
+                                    buffedEnemy = true;
+                            }
+
+                            if (buffedEnemy)
+                            {
+                                double casts = enemyto.Health / getEDmg(enemyto);
+                                if (minCast1 == -1 || minCast1 > casts)
+                                {
+                                    minCast1 = casts;
+                                    eTarget = enemyto;
+                                }
+                            }
+                            else if (getEDmg(enemyto) > enemyto.Health * 1.03)
+                            {
+                                float dist = player.Distance(enemyto.Position);
+                                if (minCast2 == -1 || minCast2 < dist)
+                                {
+                                    minCast2 = dist;
+                                    eTarget2 = enemyto;
+                                }
+                            }
+                        }
+                    }
+
+                    mainTarget = (eTarget != null) ? eTarget : eTarget2;
+                }
+                else
+                {
+                    if (player.Distance(selectedTarget.Position) <= E.Range && ((selectedTarget.HasBuffOfType(BuffType.Poison) && GetPoisonBuffEndTime(selectedTarget) > Game.Time + E.Delay) || getEDmg(selectedTarget) > selectedTarget.Health * 1.03))
+                        mainTarget = selectedTarget;
+                }
+
+                if (mainTarget != null)
+                {
+                    Orbwalker.ForceTarget(mainTarget);
+
+
+
+                        if (getEDmg(mainTarget) > mainTarget.Health * 1.1)
+                        {
+                            dontUseQW = mainTarget.NetworkId;
+                            dontUseQW2 = Game.ClockTime + 0.6f;
+                        }
+                    }
+                }
             }
             
             Obj_AI_Hero enemy = (!checkTarget) ? selectedTarget : getTarget(Q.Range);
