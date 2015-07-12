@@ -537,20 +537,11 @@ namespace Cassiopeia
                 {
                     Orbwalker.ForceTarget(mainTarget);
 
-                    if (E.Cast(mainTarget, packetCast) == Spell.CastStates.SuccessfullyCasted)
-                    {
-                        int castEdelay = menu.Item("castedalay").GetValue<Slider>().Value;
-                        int castEdelay2 = menu.Item("castedalay2").GetValue<Slider>().Value;
-                        if (castEdelay > 0 || castEdelay2 > 0)
-                        {
-                            if (castEdelay2 <= castEdelay)
-                                legitEdelay = Environment.TickCount + castEdelay;
-                            else
-                            {
-                                Random rand = new Random();
-                                legitEdelay = Environment.TickCount + rand.Next(castEdelay, castEdelay2);
-                            }
-                        }
+            if (E.IsReady() && GetETarget() != null)
+            {
+                if (Environment.TickCount >= LastECast + (EDelay * 100))
+                E.Cast(GetETarget());
+            }
 
                         if (getEDmg(mainTarget) > mainTarget.Health * 1.1)
                         {
