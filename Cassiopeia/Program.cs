@@ -542,7 +542,7 @@ namespace Cassiopeia
                 if (Environment.TickCount >= LastECast + (EDelay * 100))
                 E.Cast(GetETarget());
             }
-
+}
                         if (getEDmg(mainTarget) > mainTarget.Health * 1.1)
                         {
                             dontUseQW = mainTarget.NetworkId;
